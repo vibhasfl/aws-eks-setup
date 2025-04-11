@@ -1,8 +1,8 @@
 locals {
 
-  application_tag = lookup(var.merged_tags, "application_tag")
-  environment_tag = lookup(var.merged_tags, "environment_tag")
-  cost_center_tag = lookup(var.merged_tags, "cost_center_tag")
+  application_tag = lookup(var.merged_tags, "application")
+  environment_tag = lookup(var.merged_tags, "environment")
+  cost_center_tag = lookup(var.merged_tags, "cost_center")
 
   common_prefix = "${local.application_tag}-${local.environment_tag}"
 

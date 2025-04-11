@@ -1,9 +1,9 @@
 
 locals {
   merged_tags = {
-    application_tag = var.application_name_tag
-    environment_tag = var.environment_tag
-    cost_center_tag = var.cost_center_tag
+    application = var.application_name_tag
+    environment = var.environment_tag
+    cost_center = var.cost_center_tag
   }
 }
 
@@ -14,4 +14,13 @@ module "eks_cluster" {
   kms_key_arn         = var.kms_key_arn
   subnet_ids          = var.subnet_ids
   merged_tags         = local.merged_tags
+}
+
+module "eks_cluster_nodes" {
+  source           = "./modules/eks-nodegroup"
+  eks_cluster_name = module.eks_cluster.cluster_name
+  kms_key_arn      = var.kms_key_arn
+  subnet_ids       = var.subnet_ids
+  merged_tags      = local.merged_tags
+
 }
