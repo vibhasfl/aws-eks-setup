@@ -73,3 +73,25 @@ resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list = ["sts.amazonaws.com"]
   url            = aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer
 }
+
+
+data "aws_eks_cluster" "cluster_metadata" {
+
+  name = aws_eks_cluster.eks_cluster.name
+
+}
+
+resource "aws_security_group_rule" "eks_cluster_sg_rules" {
+
+  for_each = { for idx, rule in var.eks_cluster_securitygroup_rules : idx => rule }
+
+  security_group_id = data.aws_eks_cluster.cluster_metadata.vpc_config[0].cluster_security_group_id
+
+  type        = each.value.type
+  from_port   = each.value.from_port
+  to_port     = each.value.to_port
+  protocol    = each.value.protocol
+  cidr_blocks = each.value.cidr_blocks
+  description = each.value.description
+
+}

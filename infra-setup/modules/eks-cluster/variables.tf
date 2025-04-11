@@ -47,3 +47,18 @@ variable "eks_auth_mode" {
   description = "Authentication mode for eks cluster"
   default     = "API"
 }
+
+variable "eks_cluster_securitygroup_rules" {
+  type = list(object({
+    type        = string
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+    description = string
+  }))
+
+  description = "SG rules to attach to eks cluster"
+  default     = []
+
+}
