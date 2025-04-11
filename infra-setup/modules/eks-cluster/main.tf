@@ -8,7 +8,7 @@ locals {
 
 }
 
-resource "aws_eks_cluster" "k8_cluster" {
+resource "aws_eks_cluster" "eks_cluster" {
 
   name = local.common_prefix
 
@@ -67,4 +67,9 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_role_policy_attachment" {
 
   policy_arn = each.value
 
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  client_id_list = ["sts.amazonaws.com"]
+  url            = aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer
 }
