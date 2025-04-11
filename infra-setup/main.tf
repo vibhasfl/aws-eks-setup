@@ -29,3 +29,9 @@ module "eks_cluster_addons" {
   source           = "./modules/eks-addons"
   eks_cluster_name = module.eks_cluster.cluster_name
 }
+
+module "eks_access" {
+  source           = "./modules/eks-access"
+  eks_cluster_name = module.eks_cluster.cluster_name
+  access_entries   = var.access_entries
+}
