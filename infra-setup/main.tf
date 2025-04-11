@@ -24,3 +24,8 @@ module "eks_cluster_nodes" {
   merged_tags      = local.merged_tags
 
 }
+
+module "eks_cluster_addons" {
+  source           = "./modules/eks-addons"
+  eks_cluster_name = module.eks_cluster.cluster_name
+}
