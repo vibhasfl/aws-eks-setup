@@ -45,7 +45,7 @@ jobs:
       - name: Login into AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE}}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
           role-session-name: GitHub_and_AWS_OIDC_session
           aws-region: ap-south-1
 
@@ -116,3 +116,49 @@ jobs:
           SUMMARY: ${{ steps.tf-plan-output.outputs.summary }}
         run: |
           echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+
+  TerraformApply:
+    name: Terraform Apply (${{ github.event.inputs.action }})
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    needs: [TerraformPlan]
+    if: ${{ needs.TerraformPlan.result == 'success' && needs.TerraformPlan.outputs.tfExitCode == '2' && !cancelled() }}
+    defaults:
+      run:
+        working-directory: infra-setup
+
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+
+      - name: Print ExitCode
+        run: |
+          echo "Output from above job : ${{ needs.TerraformPlan.outputs.tfExitCode  }}"
+
+      - name: Login into AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE }}
+          role-session-name: GitHub_and_AWS_OIDC_session
+          aws-region: ap-south-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.4"
+
+      - name: Load tfvars
+        run: |
+          aws ssm get-parameter --name '${{ vars.TF_BACKEND }}' | jq -r '.Parameter.Value' > tfbackend.conf
+          aws ssm get-parameter --name '${{ vars.TF_VARS }}' | jq -r '.Parameter.Value' > terraform.tfvars
+
+      - name: Terraform Init
+        run: terraform init -backend-config=tfbackend.conf
+
+      - name: Terraform Apply or Destroy
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "destroy" ]; then
+            terraform destroy -auto-approve
+          else
+            terraform apply -auto-approve
+          fi
