@@ -37,7 +37,7 @@ jobs:
       run:
         working-directory: infra-setup
     outputs:
-      tfplanExitCode: ${{ steps.tf-plan.outputs.exitcode }}
+      tfExitCode: ${{ steps.tf-plan.outputs.exitcode }}
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
@@ -49,6 +49,45 @@ jobs:
           role-session-name: GitHub_and_AWS_OIDC_session
           aws-region: ap-south-1
 
-      - name: Run
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.4"
+
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: false
+
+      - name: Load tfvars
         run: |
-          aws sts get-caller-identity
+          aws ssm get-parameter --name '${{ vars.TF_BACKEND }}' | jq -r '.Parameter.Value' > tfbackend.conf
+          aws ssm get-parameter --name '${{ vars.TF_VARS }}' | jq -r '.Parameter.Value' > terraform.tfvars
+
+      - name: Terraform Init
+        run: terraform init -backend-config=tfbackend.conf
+
+      - name: Terraform Plan
+        id: tf-plan
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "destroy" ]; then
+            terraform plan -destroy -detailed-exitcode -no-color
+          else
+            terraform plan -detailed-exitcode -no-color
+          fi
+
+          TF_EXIT_CODE=$?
+          echo "TF_EXIT_CODE=$TF_EXIT_CODE" >> $GITHUB_ENV
+          echo "exitcode=$TF_EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if [[ $TF_EXIT_CODE -eq 1 ]]; then
+            echo Terraform Plan Failed!
+            exit 1
+          else
+            echo $TF_EXIT_CODE
+            exit 0
+          fi
+
+      - name: Print ExitCode
+        run: |
+          echo "Exit code was $TF_EXIT_CODE"
