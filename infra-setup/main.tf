@@ -15,6 +15,16 @@ module "eks_cluster" {
   merged_tags         = local.merged_tags
 }
 
+
+# Create vpc-cni first
+module "vpc_cni_addon" {
+  source           = "./modules/eks-addons"
+  eks_cluster_name = module.eks_cluster.cluster_name
+  eks_addons = {
+    vpc-cni = var.eks_addons["vpc-cni"]
+  }
+}
+
 module "eks_cluster_nodes" {
   source           = "./modules/eks-nodegroup"
   eks_cluster_name = module.eks_cluster.cluster_name
@@ -22,12 +32,18 @@ module "eks_cluster_nodes" {
   subnet_ids       = var.subnet_ids
   merged_tags      = local.merged_tags
 
+  depends_on = [module.vpc_cni_addon]
+
 }
 
-module "eks_cluster_addons" {
+module "other_eks_addons" {
   source           = "./modules/eks-addons"
   eks_cluster_name = module.eks_cluster.cluster_name
-  eks_addons       = var.eks_addons
+  eks_addons = {
+    for k, v in var.eks_addons : k => v if k != "vpc-cni"
+  }
+
+  depends_on = [module.eks_cluster_nodes]
 }
 
 module "eks_access" {
