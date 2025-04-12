@@ -71,9 +71,9 @@ jobs:
         id: tf-plan
         run: |
           if [ "${{ github.event.inputs.action }}" == "destroy" ]; then
-            terraform plan -destroy -detailed-exitcode -no-color
+            terraform plan -destroy -detailed-exitcode -no-color -out tfplan
           else
-            terraform plan -detailed-exitcode -no-color
+            terraform plan -detailed-exitcode -no-color -out tfplan
           fi
 
           TF_EXIT_CODE=$?
@@ -91,3 +91,28 @@ jobs:
       - name: Print ExitCode
         run: |
           echo "Exit code was $TF_EXIT_CODE"
+
+      - name: Create String Output
+        id: tf-plan-output
+        run: |
+          TERRAFORM_PLAN=$(terraform show -no-color tfplan)
+
+          delimiter="$(openssl rand -hex 8)"
+          {
+          echo "summary<<${delimiter}"
+          echo "## ✅ Terraform Plan Summary"
+          echo ""
+          echo "<details><summary>🔍 Click to expand plan details</summary>"
+          echo ""
+          echo '```hcl'
+          echo "$TERRAFORM_PLAN"
+          echo '```'
+          echo "</details>"
+          echo "${delimiter}"
+          } >> $GITHUB_OUTPUT
+
+      - name: Publish Terraform Plan to Task Summary
+        env:
+          SUMMARY: ${{ steps.tf-plan-output.outputs.summary }}
+        run: |
+          echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
