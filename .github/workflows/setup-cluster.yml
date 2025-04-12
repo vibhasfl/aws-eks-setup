@@ -45,7 +45,7 @@ jobs:
       - name: Login into AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_OIDC_ROLE}}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE}}
           role-session-name: GitHub_and_AWS_OIDC_session
           aws-region: ap-south-1
 
