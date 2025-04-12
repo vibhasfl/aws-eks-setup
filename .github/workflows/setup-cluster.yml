@@ -76,8 +76,13 @@ jobs:
             terraform plan -detailed-exitcode -no-color -out tfplan
           fi
 
+          TF_EXIT_CODE=$?
 
-          echo "TF_EXIT_CODE=$?" >> $GITHUB_ENV
+          # Print exit code for debugging
+          echo "Terraform Plan Exit Code: $TF_EXIT_CODE"
+
+          # Save exit code to GitHub environment variable and output
+          echo "TF_EXIT_CODE=$TF_EXIT_CODE" >> $GITHUB_ENV
           echo "exitcode=$TF_EXIT_CODE" >> $GITHUB_OUTPUT
 
           if [[ $TF_EXIT_CODE -eq 1 ]]; then
