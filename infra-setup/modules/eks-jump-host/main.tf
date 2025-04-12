@@ -66,6 +66,8 @@ resource "aws_iam_role" "ec2_ssm_role" {
       }
     ]
   })
+
+
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_core_attach" {
@@ -79,3 +81,26 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   role = aws_iam_role.ec2_ssm_role.name
 }
 
+resource "aws_iam_policy" "eks_access_policy" {
+  name        = "EKSAccessPolicy"
+  description = "Policy to allow describe cluster and access Kubernetes API"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:DescribeCluster",
+          "eks:AccessKubernetesApi"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eks_access_policy_attachment" {
+  policy_arn = aws_iam_policy.eks_access_policy.arn
+  role       = aws_iam_role.ec2_ssm_role.name
+}

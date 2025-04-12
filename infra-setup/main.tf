@@ -49,7 +49,10 @@ module "other_eks_addons" {
 module "eks_access" {
   source           = "./modules/eks-access"
   eks_cluster_name = module.eks_cluster.cluster_name
-  access_entries   = var.access_entries
+  access_entries = concat(var.access_entries, [{
+    principal_arn = module.eks_jump_server.jump_server_role
+    policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  }])
 }
 
 
