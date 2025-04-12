@@ -1,0 +1,54 @@
+name: Setup EKS cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        description: Environment you want to deploy in
+        options:
+          - dev
+          - uat
+          - prod
+
+      action:
+        type: choice
+        required: true
+        description: create or destroy
+        options:
+          - create/update
+          - destroy
+
+permissions:
+  id-token: write
+  contents: write
+  actions: read
+
+run-name: "${{ github.event.inputs.environment }} EKS Cluster Setup (Mode: ${{ github.event.inputs.action }})"
+
+jobs:
+  TerraformPlan:
+    name: Terraform Plan (${{ github.event.inputs.action }})
+    runs-on: ubuntu-latest
+    if: ${{ always() && !cancelled() }}
+    environment: ${{ github.event.inputs.environment }}
+    defaults:
+      run:
+        working-directory: infra-setup
+    outputs:
+      tfplanExitCode: ${{ steps.tf-plan.outputs.exitcode }}
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+
+      - name: Login into AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_OIDC_ROLE}}
+          role-session-name: GitHub_and_AWS_OIDC_session
+          aws-region: ap-south-1
+
+      - name: Run
+        run: |
+          aws sts get-caller-identity
