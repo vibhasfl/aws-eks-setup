@@ -61,7 +61,10 @@ variable "eks_auth_mode" {
 variable "eks_addons" {
 
   type = map(object({
-    addon_version = string
+    addon_version               = string
+    resolve_conflicts_on_create = string
+    resolve_conflicts_on_update = string
+    svc_role_arn                = string
   }))
 
   description = "Map of EKS addons"
@@ -105,4 +108,9 @@ variable "eks_cluster_securitygroup_rules" {
 
   description = "SG rules to attach to eks cluster"
 
+}
+
+variable "vpc_id" {
+  type        = string
+  description = "VPC id"
 }

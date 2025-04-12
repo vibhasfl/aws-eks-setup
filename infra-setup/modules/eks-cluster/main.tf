@@ -30,10 +30,13 @@ resource "aws_eks_cluster" "eks_cluster" {
 
   bootstrap_self_managed_addons = false
 
-  encryption_config {
-    resources = ["secrets"]
-    provider {
-      key_arn = var.kms_key_arn
+  dynamic "encryption_config" {
+    for_each = var.kms_key_arn != "" && var.kms_key_arn != null ? [1] : []
+    content {
+      resources = ["secrets"]
+      provider {
+        key_arn = var.kms_key_arn
+      }
     }
   }
 
@@ -63,7 +66,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_role_policy_attachment" {
 
   for_each = toset(var.eks_cluster_iam_policies)
 
-  role = aws_iam_role.eks_cluster_role.arn
+  role = aws_iam_role.eks_cluster_role.name
 
   policy_arn = each.value
 

@@ -1,5 +1,5 @@
 resource "aws_eks_addon" "eks_cluster_addons" {
-  for_each = { for k, v in var.eks_addons : k => v if k != "vpc_cni" }
+  for_each = { for k, v in var.eks_addons : k => v if k != "vpc-cni" }
 
   cluster_name                = var.eks_cluster_name
   addon_name                  = each.key
@@ -15,8 +15,8 @@ resource "aws_eks_addon" "eks_cluster_addons" {
 
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = var.eks_cluster_name
-  addon_name                  = "vpc_cni"
-  addon_version               = var.eks_addons["vpc_cni"].addon_version
-  resolve_conflicts_on_create = var.eks_addons["vpc_cni"].resolve_conflicts_on_create
-  resolve_conflicts_on_update = var.eks_addons["vpc_cni"].resolve_conflicts_on_update
+  addon_name                  = "vpc-cni"
+  addon_version               = var.eks_addons["vpc-cni"].addon_version
+  resolve_conflicts_on_create = var.eks_addons["vpc-cni"].resolve_conflicts_on_create
+  resolve_conflicts_on_update = var.eks_addons["vpc-cni"].resolve_conflicts_on_update
 }

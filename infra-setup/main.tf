@@ -1,4 +1,3 @@
-
 locals {
   merged_tags = {
     application = var.application_name_tag
@@ -28,10 +27,20 @@ module "eks_cluster_nodes" {
 module "eks_cluster_addons" {
   source           = "./modules/eks-addons"
   eks_cluster_name = module.eks_cluster.cluster_name
+  eks_addons       = var.eks_addons
 }
 
 module "eks_access" {
   source           = "./modules/eks-access"
   eks_cluster_name = module.eks_cluster.cluster_name
   access_entries   = var.access_entries
+}
+
+
+module "eks_jump_server" {
+  source      = "./modules/eks-jump-host"
+  merged_tags = local.merged_tags
+  subnet_id   = var.subnet_ids[0]
+  vpc_id      = var.vpc_id
+  depends_on  = [module.eks_cluster]
 }

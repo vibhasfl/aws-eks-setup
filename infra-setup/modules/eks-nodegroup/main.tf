@@ -89,7 +89,7 @@ resource "aws_iam_role" "eks_cluster_node_role" {
         Action = ["sts:AssumeRole", "sts:TagSession"],
         Effect = "Allow"
         Principal = {
-          Service = "eks.amazonaws.com"
+          Service = "ec2.amazonaws.com"
         }
       }
     ]
@@ -101,7 +101,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_node_role_policy_attachme
 
   for_each = toset(var.node_policies)
 
-  role = aws_iam_role.eks_cluster_node_role.arn
+  role = aws_iam_role.eks_cluster_node_role.name
 
   policy_arn = each.value
 
