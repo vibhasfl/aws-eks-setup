@@ -1,0 +1,66 @@
+name: Install Karpenter
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        description: Environment you want to deploy in
+        options:
+          - dev
+          - uat
+          - prod
+      action:
+        type: choice
+        required: true
+        description: create or destroy
+        options:
+          - create/update
+          - destroy
+      eks_cluster_name:
+        type: string
+        required: true
+        description: EKS cluster name
+      karpenter_version:
+        type: string
+        required: false
+        default: 1.3.3
+
+permissions:
+  id-token: write
+  contents: write
+  actions: read
+
+run-name: "${{ github.event.inputs.environment }} Karpenter Setup (Mode: ${{ github.event.inputs.action }})"
+
+jobs:
+  Setup-Karpenter:
+    name: ${{ github.event.inputs.action }} Karpenter Setup
+    runs-on: nonprod
+    if: ${{ always() && !cancelled() }}
+    environment: ${{ github.event.inputs.environment }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra-setup
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+
+      - name: Login into AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_OIDC_ROLE }}
+          role-session-name: GitHub_and_AWS_OIDC_session
+          aws-region: ap-south-1
+
+      - name: Get AWS Account ID
+        id: aws-account
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "AWS_ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+
+      - uses: azure/setup-helm@v4.2.0
+        with:
+          version: "latest"
