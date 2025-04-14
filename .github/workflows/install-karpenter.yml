@@ -39,7 +39,6 @@ jobs:
     name: ${{ github.event.inputs.action }} Karpenter Setup
     runs-on: nonprod
     if: ${{ always() && !cancelled() }}
-    environment: ${{ github.event.inputs.environment }}
     timeout-minutes: 10
     defaults:
       run:

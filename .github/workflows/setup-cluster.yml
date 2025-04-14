@@ -8,8 +8,8 @@ on:
         required: true
         description: Environment you want to deploy in
         options:
+          - poc
           - dev
-          - uat
           - prod
 
       action:
