@@ -4,6 +4,19 @@ metadata:
   name: karpenter-nodeclass
 spec:
   amiFamily: Bottlerocket
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        deleteOnTermination: true
+        encrypted: true
+        volumeSize: 8Gi
+        volumeType: gp3
+    - deviceName: /dev/xvdb
+      ebs:
+        deleteOnTermination: true
+        encrypted: true
+        volumeSize: 10Gi
+        volumeType: gp3
   amiSelectorTerms:
     - id: {{ .Values.ami_id }}
   role: {{ .Values.role }}
