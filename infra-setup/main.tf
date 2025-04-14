@@ -63,3 +63,13 @@ module "eks_jump_server" {
   vpc_id      = var.vpc_id
   depends_on  = [module.eks_cluster]
 }
+
+
+module "eks_karpenter_scaling" {
+  source            = "./modules/eks-autoscaling"
+  merged_tags       = local.merged_tags
+  eks_cluster_name  = module.eks_cluster.cluster_name
+  eks_cluster_arn   = module.eks_cluster.cluster_arn
+  eks_node_role_arn = module.eks_cluster_nodes.eks_node_role_arn
+  kms_key_arn       = var.kms_key_arn
+}
