@@ -29,7 +29,6 @@ resource "aws_iam_policy" "karpenter_ctrl_policy" {
   name        = "${local.common_prefix}-karpenter-ctrl-policy"
   description = "Policy for karpenter controller"
   policy = jsonencode({
-
     "Version" = "2012-10-17",
     "Statement" = [
       {
@@ -61,20 +60,6 @@ resource "aws_iam_policy" "karpenter_ctrl_policy" {
         "Effect"   = "Allow",
         "Action"   = ["iam:PassRole"],
         "Resource" = var.eks_node_role_arn
-      },
-      {
-        "Sid" : "AllowCrossAcKMSAccess",
-        "Action" : [
-          "kms:Encrypt",
-          "kms:Decrypt",
-          "kms:ReEncrypt*",
-          "kms:GenerateDataKey*",
-          "kms:DescribeKey",
-          "kms:GenerateDataKeyWithoutPlaintext",
-          "kms:CreateGrant"
-        ],
-        "Effect" : "Allow",
-        "Resource" : var.kms_key_arn
       },
       {
         "Sid" : "AllowEksAccess",
@@ -151,7 +136,7 @@ resource "aws_iam_policy" "karpenter_ctrl_policy" {
         "Effect" : "Allow",
         "Resource" : "*",
         "Sid" : "ConditionalEC2Termination"
-      },
+      }
     ]
 
   })
