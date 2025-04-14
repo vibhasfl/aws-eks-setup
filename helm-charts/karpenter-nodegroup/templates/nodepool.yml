@@ -3,9 +3,9 @@ kind: EC2NodeClass
 metadata:
   name: karpenter-nodeclass
 spec:
-  amifamily: Bottlerocket
+  amiFamily: Bottlerocket
   amiSelectorTerms:
-    - id: ami-002f6e91abff6eb96
+    - id: {{ .Values.ami_id }}
   role: {{ .Values.role }}
   securityGroupSelectorTerms:
     - tags:
