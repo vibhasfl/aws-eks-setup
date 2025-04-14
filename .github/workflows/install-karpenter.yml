@@ -37,7 +37,7 @@ run-name: "${{ github.event.inputs.environment }} Karpenter Setup (Mode: ${{ git
 jobs:
   Setup-Karpenter:
     name: ${{ github.event.inputs.action }} Karpenter Setup
-    runs-on: nonprod
+    runs-on: self-hosted
     if: ${{ always() && !cancelled() }}
     timeout-minutes: 10
     defaults:
