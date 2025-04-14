@@ -82,10 +82,10 @@ jobs:
 
       - name: Load values.yaml
         run: |
+          cd ../
           aws ssm get-parameter --name '${{ vars.HELM_KARPENTER }}' | jq -r '.Parameter.Value' > karpenter-values.yaml
 
       - name: Setup Nodepool
         if: ${{ inputs.action == 'create/update' }}
         run: |
-          cd ../
           helm upgrade --install karpenter-nodepool helm-charts/karpenter-nodegroup -f karpenter-values.yaml
