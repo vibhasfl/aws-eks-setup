@@ -88,4 +88,5 @@ jobs:
       - name: Setup Nodepool
         if: ${{ inputs.action == 'create/update' }}
         run: |
+          ls -lhrta
           helm upgrade --install karpenter-nodepool helm-charts/karpenter-nodegroup -f karpenter-values.yaml
