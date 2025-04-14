@@ -8,7 +8,7 @@ on:
         required: true
         description: Environment you want to deploy in
         options:
-          - dev
+          - poc
           - uat
           - prod
       action:
@@ -63,3 +63,29 @@ jobs:
       - uses: azure/setup-helm@v4.2.0
         with:
           version: "latest"
+
+      - name: Install Karpenter Controller
+        if: ${{ inputs.action == 'create/update' }}
+        run: |
+          aws eks update-kubeconfig --name ${{ inputs.eks_cluster_name }} --region ap-south-1
+          helm repo add eks https://aws.github.io/eks-charts
+          helm repo update eks
+          helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --version ${{ inputs.karpenter_version }} --namespace "karpenter" --create-namespace \
+            --set "settings.clusterName=${{ inputs.eks_cluster_name }}" \
+            --set controller.resources.requests.cpu=1 \
+            --set controller.resources.requests.memory=1Gi \
+            --set controller.resources.limits.cpu=1 \
+            --set controller.resources.limits.memory=1Gi \
+            --set serviceAccount.create=true \
+            --set serviceAccount.name=karpenter \
+            --wait
+
+      - name: Load values.yaml
+        run: |
+          aws ssm get-parameter --name '${{ vars.HELM_KARPENTER }}' | jq -r '.Parameter.Value' > karpenter-values.yaml
+
+      - name: Setup Nodepool
+        if: ${{ inputs.action == 'create/update' }}
+        run: |
+          cd ../
+          helm upgrade --install karpenter-nodepool helm-charts/karpenter-nodegroup -f karpenter-values.yaml
